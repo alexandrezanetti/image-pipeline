@@ -16,4 +16,4 @@ RUN apk --no-cache add curl && \
 # Ponto de entrada padrão
 ENTRYPOINT ["oc"]
 
-#podman build . -t ocp-zzz/pipeline-oc:release
+#podman build . -t default-route-openshift-image-registry.apps.ocp-zzz.cp.fyre.ibm.com/cp4i/pipeline-oc:release
