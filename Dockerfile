@@ -1,19 +1,26 @@
-# Use a imagem base do Alpine Linux
-FROM alpine:latest
+FROM frolvlad/alpine-glibc
 
-# Informações sobre o mantenedor
-LABEL maintainer="Seu Nome <seu.email@example.com>"
+MAINTAINER Viktor Farcic <viktor@farcic.com>
 
-# Versão do OpenShift Client desejada
-ENV OC_VERSION=v4.12.0
+LABEL org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/vfarcic/openshift-client" \
+      org.label-schema.docker.dockerfile="/Dockerfile"
 
-# Download e instalação do OpenShift Client
-RUN apk --no-cache add curl && \
-    wget https://github.com/alexandrezanetti/image-pipeline/raw/main/oc-4.14.6-linux.tar.gz && \
-    tar -xzvf oc-4.14.6-linux.tar.gz -C /usr/local/bin/ && \
-    apk del curl
+ENV OC_VERSION v3.9.0
+ENV OC_HASH 191fece
 
-# Ponto de entrada padrão
-ENTRYPOINT ["oc"]
+RUN apk add --update ca-certificates && \
+    apk add --update -t deps curl && \
+    curl -L https://github.com/openshift/origin/releases/download/${OC_VERSION}/openshift-origin-client-tools-${OC_VERSION}-${OC_HASH}-linux-64bit.tar.gz -o /tmp/oc.tar.gz && \
+    tar --strip-components=1 -xzvf  /tmp/oc.tar.gz -C /tmp/ && \
+    mv /tmp/oc /usr/local/bin/oc && \
+    chmod +x /usr/local/bin/oc && \
+    apk del --purge deps && \
+    rm /var/cache/apk/* && \
+    rm -rf /tmp/*
+
+#CMD ["oc", "version"]
+CMD ["/bin/bash"]
 
 #podman build . -t default-route-openshift-image-registry.apps.ocp-zzz.cp.fyre.ibm.com/cp4i/pipeline-oc:release
+#podman run -it default-route-openshift-image-registry.apps.ocp-zzz.cp.fyre.ibm.com/cp4i/pipeline-oc:release sh
